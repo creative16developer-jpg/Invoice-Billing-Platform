@@ -87,6 +87,10 @@ function InvoiceEditorContent() {
   const [customerSearchInput, setCustomerSearchInput] = useState('');
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
 
+  // Items Autocomplete State
+  const [itemsCatalog, setItemsCatalog] = useState<any[]>([]);
+  const [activeItemDropdownIndex, setActiveItemDropdownIndex] = useState<number | null>(null);
+
   // Form State
   const [invoiceForm, setInvoiceForm] = useState({
     invoiceNumber: '',
@@ -153,8 +157,17 @@ function InvoiceEditorContent() {
         console.error('Failed to load customers', err);
       }
     };
+    const fetchItems = async () => {
+      try {
+        const res = await api.get('/items');
+        setItemsCatalog(res);
+      } catch (err) {
+        console.error('Failed to load items catalog', err);
+      }
+    };
     if (user) {
       fetchCustomers();
+      fetchItems();
     }
   }, [user]);
 
@@ -384,7 +397,27 @@ function InvoiceEditorContent() {
     updatedItems.splice(index + 1, 0, duplicatedItem);
     setInvoiceForm({ ...invoiceForm, items: updatedItems });
   };
+  const handleSelectCatalogItem = (index: number, catalogItem: any) => {
+    const updatedItems = [...invoiceForm.items];
+    const item = { ...updatedItems[index] };
+    
+    item.description = catalogItem.name;
+    item.rate = catalogItem.rate;
+    item.weightOrQty = `1 ${catalogItem.unit || 'Pcs'}`;
+    item.amount = catalogItem.rate * 1;
 
+    updatedItems[index] = item;
+    setInvoiceForm({ ...invoiceForm, items: updatedItems });
+
+    // Clear any description/rate validation errors for this row
+    setErrors(prev => {
+      const copy = { ...prev };
+      delete copy[`item_${index}_description`];
+      delete copy[`item_${index}_rate`];
+      delete copy[`item_${index}_weightOrQty`];
+      return copy;
+    });
+  };
   // Comprehensive Form Validation Check
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -1227,17 +1260,82 @@ const downloadPDF = async () => {
                       )}
                     </div>
                     
-                    <div className="col-span-2 sm:col-span-2 space-y-1">
-                      <Label className="text-[10px] text-slate-500 font-semibold">Description / Flavor</Label>
-                      <Input 
-                        value={item.description} 
-                        placeholder="e.g. Chocolate Choco Chips"
-                        onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                        className={cn(
-                          "bg-white border-slate-200 text-xs h-9 text-slate-900",
-                          activeErrors[`item_${idx}_description`] && "border-rose-450 focus:border-rose-500"
-                        )} 
-                      />
+                    <div className="col-span-2 sm:col-span-2 space-y-1 relative">
+                      <Label className="text-[10px] text-slate-500 font-semibold">Item Description</Label>
+                      <div className="relative">
+                        <Input 
+                          value={item.description} 
+                          placeholder="e.g. Chocolate Choco Chips"
+                          onChange={(e) => {
+                            handleItemChange(idx, 'description', e.target.value);
+                            setActiveItemDropdownIndex(idx);
+                          }}
+                          onFocus={() => setActiveItemDropdownIndex(idx)}
+                          className={cn(
+                            "bg-white border-slate-200 text-xs h-9 text-slate-900",
+                            activeErrors[`item_${idx}_description`] && "border-rose-450 focus:border-rose-500"
+                          )} 
+                        />
+                        
+                        {/* Autocomplete Dropdown */}
+                        {activeItemDropdownIndex === idx && itemsCatalog.length > 0 && (
+                          <>
+                            {/* Backdrop to close on click outside */}
+                            <div 
+                              className="fixed inset-0 z-10 cursor-default" 
+                              onClick={() => setActiveItemDropdownIndex(null)}
+                            />
+                            <div className="absolute left-0 right-0 mt-1 max-h-[160px] overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-20 py-1">
+                              {(() => {
+                                const search = item.description.toLowerCase();
+                                const filtered = itemsCatalog.filter(catalogItem => 
+                                  catalogItem.name.toLowerCase().includes(search)
+                                );
+
+                                if (filtered.length === 0) {
+                                  if (search === '') {
+                                    // If empty, show all items
+                                    return itemsCatalog.map((catalogItem) => (
+                                      <button
+                                        key={catalogItem._id}
+                                        type="button"
+                                        onClick={() => {
+                                          handleSelectCatalogItem(idx, catalogItem);
+                                          setActiveItemDropdownIndex(null);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-xs text-slate-800 hover:bg-indigo-50 hover:text-indigo-650 transition-colors flex justify-between items-center cursor-pointer"
+                                      >
+                                        <span className="truncate font-medium">{catalogItem.name}</span>
+                                        <span className="text-[10px] text-slate-400 font-normal ml-2">₹{catalogItem.rate}/{catalogItem.unit}</span>
+                                      </button>
+                                    ));
+                                  }
+                                  return (
+                                    <div className="text-[10px] text-slate-400 italic py-2 text-center px-3">
+                                      No items match "{item.description}"
+                                    </div>
+                                  );
+                                }
+
+                                return filtered.map((catalogItem) => (
+                                  <button
+                                    key={catalogItem._id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleSelectCatalogItem(idx, catalogItem);
+                                      setActiveItemDropdownIndex(null);
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-xs text-slate-800 hover:bg-indigo-50 hover:text-indigo-650 transition-colors flex justify-between items-center cursor-pointer"
+                                  >
+                                    <span className="truncate font-medium">{catalogItem.name}</span>
+                                    <span className="text-[10px] text-slate-400 font-normal ml-2">₹{catalogItem.rate}/{catalogItem.unit}</span>
+                                  </button>
+                                ));
+                              })()}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     <div className="col-span-2 sm:col-span-1 space-y-1">

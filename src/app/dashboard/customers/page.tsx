@@ -146,10 +146,10 @@ function CustomersPageContent() {
             <Plus className="h-4 w-4 mr-1.5" /> Add Customer
           </Button>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent>
           {/* Search input */}
           <div className="relative max-w-sm mb-6">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-2 h-4 w-4 text-slate-400" />
             <Input 
               placeholder="Search by name or phone..." 
               value={customerSearch}

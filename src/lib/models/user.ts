@@ -20,6 +20,9 @@ const UserSchema = new Schema({
   },
   logoUrl: { type: String, default: '' },
   licenseNumber: { type: String, default: '' }, // FSSAI or GSTIN, etc.
+  isVerified: { type: Boolean, default: true },
+  otp: { type: String, default: null },
+  otpExpires: { type: Date, default: null },
   templateSettings: {
     primaryColor: { type: String, default: '#b91c1c' }, // Cakespot red
     secondaryColor: { type: String, default: '#1f2937' },
@@ -32,5 +35,9 @@ const UserSchema = new Schema({
     customTerms: { type: String, default: '1. Goods once sold will not be taken back or exchanged\n2. All disputes are subject to local jurisdiction only' }
   }
 }, { timestamps: true });
+
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.User;
+}
 
 export const User = mongoose.models.User || mongoose.model('User', UserSchema);

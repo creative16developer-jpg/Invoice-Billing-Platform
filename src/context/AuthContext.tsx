@@ -35,7 +35,9 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: String) => Promise<void>;
-  signup: (userData: any) => Promise<void>;
+  signup: (userData: any) => Promise<any>;
+  verifyOtp: (email: string, otp: string) => Promise<any>;
+  resendOtp: (email: string) => Promise<any>;
   logout: () => void;
   updateProfile: (profileData: any) => Promise<void>;
 }
@@ -87,9 +89,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       const data = await api.post('/auth/signup', userData);
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      router.push('/dashboard');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        router.push('/dashboard');
+      }
+      return data;
+    } catch (err: any) {
+      setLoading(false);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async (email: string, otp: string) => {
+    setLoading(true);
+    try {
+      const data = await api.post('/auth/verify-otp', { email, otp });
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        router.push('/dashboard');
+      }
+      return data;
+    } catch (err: any) {
+      setLoading(false);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendOtp = async (email: string) => {
+    setLoading(true);
+    try {
+      const data = await api.post('/auth/resend-otp', { email });
+      return data;
     } catch (err: any) {
       setLoading(false);
       throw err;
@@ -115,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, verifyOtp, resendOtp, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

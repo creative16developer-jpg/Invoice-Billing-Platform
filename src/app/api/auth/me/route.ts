@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+    if (!user.isVerified) {
+      return NextResponse.json({ error: 'Account not verified' }, { status: 403 });
+    }
     return NextResponse.json(user);
   } catch (err: any) {
     console.error('GetMe error:', err);

@@ -11,6 +11,14 @@ const getHeaders = () => {
   return headers;
 };
 
+const handleErrorResponse = async (res: Response) => {
+  const errorBody = await res.json().catch(() => ({ error: 'An error occurred' }));
+  const customError = new Error(errorBody.error || `HTTP error! status: ${res.status}`) as any;
+  customError.status = res.status;
+  Object.assign(customError, errorBody);
+  return customError;
+};
+
 export const api = {
   async get(path: string) {
     const res = await fetch(`${API_URL}${path}`, {
@@ -18,8 +26,7 @@ export const api = {
       headers: getHeaders(),
     });
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ error: 'An error occurred' }));
-      throw new Error(error.error || `HTTP error! status: ${res.status}`);
+      throw await handleErrorResponse(res);
     }
     return res.json();
   },
@@ -31,8 +38,7 @@ export const api = {
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ error: 'An error occurred' }));
-      throw new Error(error.error || `HTTP error! status: ${res.status}`);
+      throw await handleErrorResponse(res);
     }
     return res.json();
   },
@@ -44,8 +50,7 @@ export const api = {
       body: JSON.stringify(data),
     });
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ error: 'An error occurred' }));
-      throw new Error(error.error || `HTTP error! status: ${res.status}`);
+      throw await handleErrorResponse(res);
     }
     return res.json();
   },
@@ -56,8 +61,7 @@ export const api = {
       headers: getHeaders(),
     });
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ error: 'An error occurred' }));
-      throw new Error(error.error || `HTTP error! status: ${res.status}`);
+      throw await handleErrorResponse(res);
     }
     return res.json();
   },

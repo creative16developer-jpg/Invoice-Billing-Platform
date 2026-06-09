@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter email and password' }, { status: 400 });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 400 });
     }
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     if (!isMatch) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 400 });
     }
+
 
     const token = generateToken(user._id.toString());
 

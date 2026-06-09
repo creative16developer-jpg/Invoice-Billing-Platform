@@ -374,7 +374,7 @@ function InvoicesPageContent() {
               <CardDescription className="text-slate-500">Manage all invoices issued by your business.</CardDescription>
             </div>
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2 h-4 w-4 text-slate-400" />
               <Input 
                 placeholder="Search customer or invoice..." 
                 value={search}

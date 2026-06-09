@@ -7,7 +7,7 @@ export default function SignupCatchAll() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/login');
+    router.replace('/signup');
   }, [router]);
 
   return (

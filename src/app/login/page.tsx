@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { FileText, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
+  const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,8 +66,12 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please try again.');
-      setLoading(false);
+      if (err.unverified) {
+        router.push(`/signup?unverified=true&email=${encodeURIComponent(err.email || email)}`);
+      } else {
+        setError(err.message || 'Invalid credentials. Please try again.');
+        setLoading(false);
+      }
     }
   };
 

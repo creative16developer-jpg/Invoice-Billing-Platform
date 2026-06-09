@@ -43,6 +43,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     description = "Manage all invoices issued by your business.";
   } else if (pathname === '/dashboard/customers') {
     description = "Manage saved client contacts for quick invoice creation.";
+  } else if (pathname === '/dashboard/items') {
+    description = "Manage your standard product/service catalog for rapid line item selection.";
   } else if (pathname === '/dashboard/settings') {
     description = "Update your primary business details and invoice templates.";
   }
@@ -115,6 +117,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard/customers">
               <button className={`px-4 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/dashboard/customers' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
                 Customers
+              </button>
+            </Link>
+            <Link href="/dashboard/items">
+              <button className={`px-4 py-1.5 rounded-md text-xs sm:text-sm font-semibold transition-all cursor-pointer ${pathname === '/dashboard/items' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+                Items
               </button>
             </Link>
           </div>
